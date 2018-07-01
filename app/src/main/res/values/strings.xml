@@ -6,4 +6,6 @@
     <string name="tags">Tags</string>
     <string name="category">Category</string>
     <string name="photo">PHOTO</string>
+    <string name="close">X</string>
+    <string name="place_image">Place Image</string>
 </resources>
