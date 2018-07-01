@@ -13,6 +13,10 @@ import java.util.List;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder>{
 
+    public void setBitmapList(List<Bitmap> bitmapList) {
+        this.bitmapList = bitmapList;
+    }
+
     private List<Bitmap> bitmapList = new ArrayList<>();
     private ImageClickListener imageClickListener;
 
@@ -21,9 +25,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         imageClickListener = listener;
     }
 
-    public void updateList(List<Bitmap> imageList){
-        bitmapList.clear();
-        bitmapList.addAll(imageList);
+    public void updateList(){
         notifyDataSetChanged();
     }
 
