@@ -8,4 +8,5 @@
     <string name="photo">PHOTO</string>
     <string name="close">X</string>
     <string name="place_image">Place Image</string>
+    <string name="add_place">ADD PLACE</string>
 </resources>
