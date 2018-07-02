@@ -28,7 +28,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCmzP7T4Wv-VzVXFQDjz-JV1rZ1h-Ipl6I" />
 
-        <activity android:name=".fullImage"></activity>
+        <activity android:name=".full_image"></activity>
     </application>
 
 </manifest>

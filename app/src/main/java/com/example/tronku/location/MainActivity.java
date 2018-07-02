@@ -35,8 +35,6 @@ import static android.Manifest.permission.CAMERA;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, ImageAdapter.ImageClickListener {
 
     CardView photo;
-    Dialog dialog;
-    int i;
     private int requestCode = 100;
     private static final int REQ_PERMISSION = 1;
     private RecyclerView recyclerView;
@@ -46,11 +44,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         if(savedInstanceState !=null){
             imageList = savedInstanceState.getParcelableArrayList("bitmap");
         }
-        setContentView(R.layout.activity_main);
 
         //location_autocomplete
         PlaceAutocompleteFragment places= (PlaceAutocompleteFragment)
@@ -78,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
-        dialog = new Dialog(this);
         recyclerView = findViewById(R.id.recyclerview);
         adapter = new ImageAdapter(imageList, this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -162,59 +159,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
-    public void onImageClick(final int position) {
-        //Pop-up for bigger view
-        i = position;
-        TextView close, prev, next;
-        final ImageView image;
-
-
-        dialog.setContentView(R.layout.activity_full_image);
-
-        image = dialog.findViewById(R.id.singlePlaceImage);
-        image.setImageBitmap(adapter.getImage(i));
-
-        close = dialog.findViewById(R.id.close);
-        close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        prev = dialog.findViewById(R.id.prev);
-        prev.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(i==0){
-                    //first.show();
-                }
-                else{
-                    image.setImageBitmap(adapter.getImage(--i));
-
-                }
-            }
-        });
-
-        next = dialog.findViewById(R.id.next);
-        next.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(i==imageList.size() -1 ){
-                    //last.show();
-                }
-                else {
-                    image.setImageBitmap(adapter.getImage(++i));
-                }
-            }
-        });
-
-        dialog.show();
-    }
-
-    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList("bitmap", (ArrayList<? extends Parcelable>) imageList);
+    }
+
+    @Override
+    public void onImageClick(int position) {
+        //Pop-up for bigger view
+        Intent bigger = new Intent(this, full_image.class);
+        bigger.putExtra("position", position);
+        bigger.putParcelableArrayListExtra("imageList", (ArrayList<? extends Parcelable>) imageList);
+        startActivity(bigger);
     }
 }
