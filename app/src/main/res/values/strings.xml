@@ -6,7 +6,9 @@
     <string name="tags">Tags</string>
     <string name="category">Category</string>
     <string name="photo">PHOTO</string>
-    <string name="close">CLOSE X</string>
+    <string name="close_button">CLOSE</string>
     <string name="place_image">Place Image</string>
     <string name="add_place">ADD PLACE</string>
+    <string name="prev">PREV</string>
+    <string name="next">NEXT</string>
 </resources>

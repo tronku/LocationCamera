@@ -7,7 +7,7 @@
 
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="true"/>
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -16,7 +16,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,7 +26,9 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCmzP7T4Wv-VzVXFQDjz-JV1rZ1h-Ipl6I"/>
+            android:value="AIzaSyCmzP7T4Wv-VzVXFQDjz-JV1rZ1h-Ipl6I" />
+
+        <activity android:name=".fullImage"></activity>
     </application>
 
 </manifest>

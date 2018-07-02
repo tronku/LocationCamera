@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     CardView photo;
     Dialog dialog;
+    int i;
     private int requestCode = 100;
     private static final int REQ_PERMISSION = 1;
     private RecyclerView recyclerView;
@@ -44,6 +46,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(savedInstanceState !=null){
+            imageList = savedInstanceState.getParcelableArrayList("bitmap");
+        }
         setContentView(R.layout.activity_main);
 
         //location_autocomplete
@@ -156,14 +162,59 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
-    public void onImageClick(int position) {
+    public void onImageClick(final int position) {
         //Pop-up for bigger view
-        ImageView image;
-        dialog.setContentView(R.layout.image__big_view);
+        i = position;
+        TextView close, prev, next;
+        final ImageView image;
+
+
+        dialog.setContentView(R.layout.activity_full_image);
 
         image = dialog.findViewById(R.id.singlePlaceImage);
-        image.setImageBitmap(imageList.get(position));
+        image.setImageBitmap(adapter.getImage(i));
+
+        close = dialog.findViewById(R.id.close);
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        prev = dialog.findViewById(R.id.prev);
+        prev.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(i==0){
+                    //first.show();
+                }
+                else{
+                    image.setImageBitmap(adapter.getImage(--i));
+
+                }
+            }
+        });
+
+        next = dialog.findViewById(R.id.next);
+        next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(i==imageList.size() -1 ){
+                    //last.show();
+                }
+                else {
+                    image.setImageBitmap(adapter.getImage(++i));
+                }
+            }
+        });
 
         dialog.show();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("bitmap", (ArrayList<? extends Parcelable>) imageList);
     }
 }
