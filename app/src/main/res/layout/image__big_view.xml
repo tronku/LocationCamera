@@ -1,26 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="380dp"
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="350dp"
     android:layout_height="450dp"
     android:background="@color/backgroundDark"
     android:layout_gravity="center"
     android:orientation="vertical"
     android:padding="6dp">
 
-    <TextView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:text="@string/close"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:id="@+id/close"
-        android:gravity="center"
-        android:layout_gravity="end"
-        android:background="@drawable/circle_bg"/>
-
     <ImageView
-        android:layout_width="350dp"
-        android:layout_height="380dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:contentDescription="@string/place_image"
         android:layout_gravity="center"
         android:layout_marginTop="5dp"

@@ -1,12 +1,12 @@
 <resources>
-    <string name="app_name">location</string>
+    <string name="app_name">Admin - Things in the City</string>
     <string name="name_of_the_place">Name of the place</string>
     <string name="about_the_place">About the place</string>
     <string name="location">Location</string>
     <string name="tags">Tags</string>
     <string name="category">Category</string>
     <string name="photo">PHOTO</string>
-    <string name="close">X</string>
+    <string name="close">CLOSE X</string>
     <string name="place_image">Place Image</string>
     <string name="add_place">ADD PLACE</string>
 </resources>

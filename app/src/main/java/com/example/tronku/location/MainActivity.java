@@ -158,17 +158,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onImageClick(int position) {
         //Pop-up for bigger view
-        TextView close;
         ImageView image;
         dialog.setContentView(R.layout.image__big_view);
-
-        close = dialog.findViewById(R.id.close);
-        close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
 
         image = dialog.findViewById(R.id.singlePlaceImage);
         image.setImageBitmap(imageList.get(position));
