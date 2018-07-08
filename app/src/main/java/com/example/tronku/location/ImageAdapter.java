@@ -1,6 +1,7 @@
 package com.example.tronku.location;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -13,15 +14,15 @@ import java.util.List;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder>{
 
-    private List<Bitmap> bitmapList = new ArrayList<>();
+    private List<Uri> imgList = new ArrayList<>();
     private ImageClickListener imageClickListener;
 
-    public void setBitmapList(List<Bitmap> bitmapList) {
-        this.bitmapList = bitmapList;
+    public void setUriList(List<Uri> imgList) {
+        this.imgList = imgList;
     }
 
-    public ImageAdapter(List<Bitmap> bitmaps, ImageClickListener listener) {
-        bitmapList = bitmaps;
+    public ImageAdapter(List<Uri> imgList, ImageClickListener listener) {
+        this.imgList = imgList;
         imageClickListener = listener;
     }
 
@@ -29,8 +30,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         notifyDataSetChanged();
     }
 
-    public Bitmap getImage(int position){
-        return bitmapList.get(position);
+    public Uri getImage(int position){
+        return imgList.get(position);
     }
 
     public interface ImageClickListener {
@@ -46,12 +47,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
-        holder.image_item.setImageBitmap(bitmapList.get(position));
+        holder.image_item.setImageURI(imgList.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return bitmapList.size();
+        return imgList.size();
     }
 
     public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{

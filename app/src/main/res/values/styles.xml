@@ -17,7 +17,7 @@
     </style>
 
     <style name="editText_details">
-        <item name="android:layout_marginTop">6dp</item>
+        <item name="android:layout_marginTop">4dp</item>
         <item name="android:layout_marginStart">16dp</item>
         <item name="android:layout_marginLeft">16dp</item>
         <item name="android:textSize">22sp</item>
