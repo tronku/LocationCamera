@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private EditText name, about, tags, city, weburl, category;
     private List<Uri> imageUriList = new ArrayList<>();
     private Uri imageUri = null;
-    private Map<String, List<String>> cities = new HashMap<>();
+    private Map<String, ArrayList<String>> cities = new HashMap<>();
 
     //Firebase references
     private FirebaseDatabase firebaseDatabase;
@@ -132,6 +132,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onClick(View v) {
                 addData();
                 imageUriList.clear();
+                adapter.setUriList(imageUriList);
+                adapter.updateList();
                 name.setText("");
                 city.setText("");
                 weburl.setText("");
@@ -205,6 +207,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Map<String, Object> values = new HashMap<>();
         values.put("/places/" + key, placeValues);
         placeReference.updateChildren(values);
+
+        //cities
+        ArrayList<String> pushIds;
+        boolean city_present = false;
+        if(cities.containsKey(cityName)){
+            pushIds = cities.get(cityName);
+            city_present = true;
+        }
+        else{
+            pushIds = new ArrayList<>();
+            city_present = false;
+        }
+        pushIds.add(key);
+        cities.put(cityName, pushIds);
+
+        setCityData(cityName, city_present);
         setDownloadUri(key);
     }
 
@@ -213,15 +231,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         for(int i=0;i<imageUriList.size();i++){
 
             //high res picture
-            final StorageReference photoUri = storageReference.child(key).child("images").child("highres").child(imageUriList.get(i).getLastPathSegment());
-            UploadTask uploadTask = photoUri.putFile(imageUri);
+            final StorageReference photoUriHigh = storageReference.child(key).child("images").child("highres").child(imageUriList.get(i).getLastPathSegment());
+            UploadTask uploadTask = photoUriHigh.putFile(imageUri);
             Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
                     if (!task.isSuccessful()) {
                         throw task.getException();
                     }
-                    return photoUri.getDownloadUrl();
+                    return photoUriHigh.getDownloadUrl();
                 }
             }).addOnCompleteListener(new OnCompleteListener<Uri>() {
                 @Override
@@ -238,6 +256,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
             });
+        }
+    }
+
+    public void setCityData(String cityName, boolean city_present){
+        String key = cityReference.child("cities").push().getKey();
+        DatabaseReference cityData = firebaseDatabase.getReference().child(key);
+        ArrayList<String> cityPlaces = cities.get(cityName);
+
+        Map<String, Object> city = new HashMap<>();
+        city.put("/cities/" + key + "/title", cityName);
+        cityReference.updateChildren(city);
+        Map<String, Object> places = new HashMap<>();
+
+
+        for(int i=0;i<cityPlaces.size();i++){
+            String placeKey = cityData.child("places").push().getKey();
+            places.put("/cities/" + key + "/places/" + placeKey, cityPlaces.get(i));
+            cityReference.updateChildren(places);
         }
     }
 }
