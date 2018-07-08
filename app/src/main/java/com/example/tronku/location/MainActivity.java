@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,17 +35,29 @@ import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.iceteck.silicompressorr.SiliCompressor;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import id.zelory.compressor.Compressor;
 
 import static android.Manifest.permission.CAMERA;
 
@@ -230,6 +244,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         for(int i=0;i<imageUriList.size();i++){
 
+            File imageFile, compressedFile = null;
+
             //high res picture
             final StorageReference photoUriHigh = storageReference.child(key).child("images").child("highres").child(imageUriList.get(i).getLastPathSegment());
             UploadTask uploadTask = photoUriHigh.putFile(imageUri);
@@ -246,11 +262,42 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()) {
                         Uri downloadUri = task.getResult();
-                        DatabaseReference imageRef = firebaseDatabase.getReference().child(key).child("images").child("highres");
-                        String imageKey = imageRef.push().getKey();
-                        Map<String, Object> images = new HashMap<>();
-                        images.put("/places/" + key + "/images/highres/" + imageKey, downloadUri.toString());
-                        placeReference.updateChildren(images);
+                        DatabaseReference imageRefHigh = firebaseDatabase.getReference().child(key).child("images").child("highres");
+                        String imageKey = imageRefHigh.push().getKey();
+                        Map<String, Object> imagesHigh = new HashMap<>();
+                        imagesHigh.put("/places/" + key + "/images/highres/" + imageKey, downloadUri.toString());
+                        placeReference.updateChildren(imagesHigh);
+                    } else {
+                        Toast.makeText(MainActivity.this, "Error!", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+
+            //low res picture
+            Bitmap bitmap = decodeFile(new File(imageUri.getPath()));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, baos);
+            byte[] data = baos.toByteArray();
+            final StorageReference photoUriLow = storageReference.child(key).child("images").child("lowres").child(imageUriList.get(i).getLastPathSegment());
+            UploadTask uploadTaskLow = photoUriLow.putBytes(data);
+            Task<Uri> urlTaskLow = uploadTaskLow.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                @Override
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return photoUriLow.getDownloadUrl();
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        DatabaseReference imageRefLow = firebaseDatabase.getReference().child(key).child("images").child("lowres");
+                        String imageKey = imageRefLow.push().getKey();
+                        Map<String, Object> imagesLow = new HashMap<>();
+                        imagesLow.put("/places/" + key + "/images/lowres/" + imageKey, downloadUri.toString());
+                        placeReference.updateChildren(imagesLow);
                     } else {
                         Toast.makeText(MainActivity.this, "Error!", Toast.LENGTH_LONG).show();
                     }
@@ -259,21 +306,92 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    public void setCityData(String cityName, boolean city_present){
-        String key = cityReference.child("cities").push().getKey();
-        DatabaseReference cityData = firebaseDatabase.getReference().child(key);
-        ArrayList<String> cityPlaces = cities.get(cityName);
+    public void setCityData(final String cityName, boolean city_present){
+        String key;
+        final ArrayList<String> cityPlaces = cities.get(cityName);
 
-        Map<String, Object> city = new HashMap<>();
-        city.put("/cities/" + key + "/title", cityName);
-        cityReference.updateChildren(city);
-        Map<String, Object> places = new HashMap<>();
+        if(city_present){
+            Query cityQuery = cityReference.child("cities").orderByChild("title").equalTo(cityName);
+            cityQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot citySnapshot: dataSnapshot.getChildren()) {
+                        Map<String, Object> places = new HashMap<>();
+                        String placeKey = citySnapshot.getRef().push().getKey();
+                        places.put("/cities/" + citySnapshot.getKey() + "/places/" + placeKey, cityPlaces.get(cityPlaces.size()-1));
+                        cityReference.updateChildren(places);
+                    }
+                }
 
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-        for(int i=0;i<cityPlaces.size();i++){
-            String placeKey = cityData.child("places").push().getKey();
-            places.put("/cities/" + key + "/places/" + placeKey, cityPlaces.get(i));
-            cityReference.updateChildren(places);
+                }
+            });
         }
+
+        else{
+            key = cityReference.child("cities").push().getKey();
+            DatabaseReference cityData = firebaseDatabase.getReference().child(key);
+
+            Map<String, Object> city = new HashMap<>();
+            city.put("/cities/" + key + "/title", cityName);
+            cityReference.updateChildren(city);
+            Map<String, Object> places = new HashMap<>();
+
+            for(int i=0;i<cityPlaces.size();i++){
+                String placeKey = cityData.child("places").push().getKey();
+                places.put("/cities/" + key + "/places/" + placeKey, cityPlaces.get(i));
+                cityReference.updateChildren(places);
+            }
+        }
+    }
+
+    public Bitmap decodeFile(File f) {
+        Bitmap b = null;
+
+        //Decode image size
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inJustDecodeBounds = true;
+
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(f);
+            BitmapFactory.decodeStream(fis, null, o);
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int IMAGE_MAX_SIZE = 1024;
+        int scale = 1;
+        if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
+            scale = (int) Math.pow(2, (int) Math.ceil(Math.log(IMAGE_MAX_SIZE /
+                    (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
+        }
+
+        //Decode with inSampleSize
+        BitmapFactory.Options o2 = new BitmapFactory.Options();
+        o2.inSampleSize = scale;
+        try {
+            fis = new FileInputStream(f);
+            b = BitmapFactory.decodeStream(fis, null, o2);
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            FileOutputStream out = new FileOutputStream(f);
+            if (b != null) {
+                b.compress(Bitmap.CompressFormat.PNG, 100, out);
+            }
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return b;
     }
 }
